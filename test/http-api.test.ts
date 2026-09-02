@@ -35,6 +35,7 @@ test("HTTP booking responses distinguish creation, replay, and conflict", async 
   const created = await target.handle(request);
   assert.equal(created.status, 201);
   assert.equal(JSON.parse(created.body).replayed, false);
+  assert.equal(JSON.parse(created.body).booking.status, "requested");
 
   const replay = await target.handle(request);
   assert.equal(replay.status, 200);

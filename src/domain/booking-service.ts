@@ -27,7 +27,7 @@ function confirmation(booking: StoredBooking): BookingConfirmation {
     slotId: booking.slotId,
     startAt: booking.startAt,
     endAt: booking.endAt,
-    status: "confirmed",
+    status: "requested",
   };
 }
 

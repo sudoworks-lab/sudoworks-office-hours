@@ -19,7 +19,7 @@ const elements = {
 };
 
 const displayTimezone = "Asia/Tokyo";
-const submissionTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+const submissionTimezone = displayTimezone;
 document.querySelector("#visitor-timezone").textContent = "日本時間（JST）";
 
 const nocEvidenceDetails = document.querySelector("#noc-evidence-details");
@@ -66,7 +66,7 @@ function renderSlots() {
     const day = document.createElement("strong");
     day.textContent = parts.day;
     const time = document.createElement("span");
-    time.textContent = slot.available ? parts.time : `${parts.time} · 確保済み`;
+    time.textContent = slot.available ? parts.time : `${parts.time} · 仮確保済み`;
     button.append(day, time);
     button.addEventListener("click", () => {
       state.selectedSlotId = slot.id;
@@ -115,11 +115,11 @@ function showFields(fields = {}) {
 }
 
 function requestErrorMessage(status) {
-  if (status === 400) return "入力内容を確認してから、リクエストをもう一度保存してください。";
+  if (status === 400) return "入力内容を確認してから、リクエストをもう一度送信してください。";
   if (status === 409) return "その時間枠は別のリクエストで確保されました。別の時間を選んでください。";
   if (status === 429) return "短時間に多くのリクエストを受け付けました。少し待ってから再試行してください。";
-  if (status === 503) return "リクエストの保存先を一時的に利用できません。時間をおいて再試行してください。";
-  return "予期しない問題により、リクエストを保存できませんでした。";
+  if (status === 503) return "リクエスト受付を一時的に利用できません。時間をおいて再試行してください。";
+  return "予期しない問題により、リクエストを送信できませんでした。";
 }
 
 elements.form.addEventListener("submit", async (event) => {
@@ -140,7 +140,7 @@ elements.form.addEventListener("submit", async (event) => {
   }
 
   elements.submit.disabled = true;
-  elements.submitLabel.textContent = "保存しています…";
+  elements.submitLabel.textContent = "送信しています…";
   let responseStatus = 500;
   try {
     const response = await fetch("/api/bookings", {
@@ -172,7 +172,7 @@ elements.form.addEventListener("submit", async (event) => {
     elements.formError.focus?.();
   } finally {
     elements.submit.disabled = false;
-    elements.submitLabel.textContent = "リクエストを保存する";
+    elements.submitLabel.textContent = "面談リクエストを送信する";
   }
 });
 
@@ -192,7 +192,7 @@ async function loadEngineeringView() {
     const response = await fetch("/api/engineering", { headers: { accept: "application/json" } });
     const data = await response.json();
     if (!response.ok) throw new Error("engineering endpoint unavailable");
-    document.querySelector("#runtime-readiness").textContent = data.readiness === "ready" ? "リクエストを保存できます" : "リクエスト保存機能に問題があります";
+    document.querySelector("#runtime-readiness").textContent = data.readiness === "ready" ? "リクエストを受け付けられます" : "リクエスト受付機能に問題があります";
     document.querySelector("#runtime-identity").textContent = `${data.runtime} Runtime · ${data.persistence} persistence`;
     document.querySelector("#metric-requests").textContent = data.counters.requests.toLocaleString();
     document.querySelector("#metric-bookings").textContent = data.counters.bookingsCreated.toLocaleString();

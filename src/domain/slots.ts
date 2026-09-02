@@ -1,39 +1,49 @@
 import type { SlotCatalogue } from "./model.ts";
 
-const SLOT_HOURS_UTC = [9, 16] as const;
-const SLOT_DAYS_UTC = new Set([2, 4]); // Tuesday and Thursday.
+const JST_OFFSET_MS = 9 * 60 * 60 * 1_000;
+const WEEKDAYS = new Set([1, 2, 3, 4, 5]);
+const SLOT_WINDOW_START_MINUTES = 9 * 60;
+const SLOT_WINDOW_END_MINUTES = 12 * 60;
 const SLOT_DURATION_MS = 30 * 60 * 1_000;
+const MINIMUM_LEAD_TIME_MS = 60 * 60 * 1_000;
 
 function slotId(start: Date): string {
   return `slot_${start.toISOString().replace(/\.000Z$/u, "Z").replaceAll(":", "-")}`;
 }
 
 export class RollingSlotCatalogue implements SlotCatalogue {
-  readonly horizonDays: number;
+  readonly horizonBusinessDays: number;
 
-  constructor(horizonDays = 21) {
-    this.horizonDays = horizonDays;
+  constructor(horizonBusinessDays = 14) {
+    this.horizonBusinessDays = horizonBusinessDays;
   }
 
   list(now: Date) {
     const slots: { id: string; startAt: string; endAt: string }[] = [];
-    const firstDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const nowInJst = new Date(now.getTime() + JST_OFFSET_MS);
+    const firstDay = new Date(Date.UTC(
+      nowInJst.getUTCFullYear(),
+      nowInJst.getUTCMonth(),
+      nowInJst.getUTCDate(),
+    ));
+    let dayOffset = 0;
+    let offeredBusinessDays = 0;
 
-    for (let dayOffset = 0; dayOffset < this.horizonDays; dayOffset += 1) {
+    while (offeredBusinessDays < this.horizonBusinessDays) {
       const day = new Date(firstDay.getTime() + dayOffset * 86_400_000);
-      if (!SLOT_DAYS_UTC.has(day.getUTCDay())) continue;
+      dayOffset += 1;
+      if (!WEEKDAYS.has(day.getUTCDay())) continue;
 
-      for (const hour of SLOT_HOURS_UTC) {
-        const start = new Date(Date.UTC(
-          day.getUTCFullYear(),
-          day.getUTCMonth(),
-          day.getUTCDate(),
-          hour,
-        ));
-        if (start.getTime() <= now.getTime() + 60 * 60 * 1_000) continue;
+      const daySlots: { id: string; startAt: string; endAt: string }[] = [];
+      for (let minute = SLOT_WINDOW_START_MINUTES; minute < SLOT_WINDOW_END_MINUTES; minute += 30) {
+        const start = new Date(day.getTime() - JST_OFFSET_MS + minute * 60 * 1_000);
+        if (start.getTime() <= now.getTime() + MINIMUM_LEAD_TIME_MS) continue;
         const end = new Date(start.getTime() + SLOT_DURATION_MS);
-        slots.push({ id: slotId(start), startAt: start.toISOString(), endAt: end.toISOString() });
+        daySlots.push({ id: slotId(start), startAt: start.toISOString(), endAt: end.toISOString() });
       }
+      if (daySlots.length === 0) continue;
+      slots.push(...daySlots);
+      offeredBusinessDays += 1;
     }
 
     return slots;

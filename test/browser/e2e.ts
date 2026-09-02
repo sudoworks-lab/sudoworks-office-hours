@@ -144,7 +144,7 @@ try {
   assert.match(nocText, /AIの判断だけに運用操作を任せず/u);
   assert.match(nocText, /一般的なexactly-onceは主張しません/iu);
   assert.doesNotMatch(nocText, /commercial production|商用本番(?:で|に)(?:稼働|利用)|enterprise adoption|企業導入|7日間継続稼働検証[^\n]*(?:完了|完了済み)/iu);
-  assert.match(await page.locator("#evidence").innerText(), /リクエストを保存できます/u);
+  assert.match(await page.locator("#evidence").innerText(), /リクエストを受け付けられます/u);
   assert.equal(await page.locator("main").count(), 1);
   assert.equal(await page.locator("nav[aria-label='メインナビゲーション']").count(), 1);
   assert.equal(await page.locator("#visitor-timezone").innerText(), "日本時間（JST）");
@@ -155,7 +155,7 @@ try {
   assert.ok(desktopDimensions.scrollWidth <= desktopDimensions.clientWidth + 1, `Desktop page overflows by ${desktopDimensions.scrollWidth - desktopDimensions.clientWidth}px.`);
 
   assert.match(await page.locator("#office-hours").innerText(), /技術対話リクエスト/u);
-  assert.match(await page.locator("#office-hours").innerText(), /運営者への自動通知.*行いません/u);
+  assert.match(await page.locator("#office-hours").innerText(), /送信は面談確定ではありません/u);
   assert.equal(await page.locator("#name").getAttribute("aria-describedby"), "field-name");
   assert.equal(await page.locator("#email").getAttribute("aria-describedby"), "field-email");
   assert.equal(await page.locator("#slot-list").getAttribute("aria-describedby"), "field-slotId");
@@ -184,19 +184,19 @@ try {
   assert.equal(firstSlotAccessibleName, `${expectedFirstSlotDay} ${expectedFirstSlotTime}`);
   assert.doesNotMatch(firstSlotAccessibleName, /\bat\b|unavailable/iu);
 
-  const submit = page.getByRole("button", { name: /リクエストを保存する/u });
+  const submit = page.getByRole("button", { name: /面談リクエストを送信する/u });
   await page.route("**/api/bookings", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 150));
     await route.continue();
   }, { times: 1 });
   await submit.click();
-  await page.getByRole("button", { name: /保存しています/u }).waitFor();
+  await page.getByRole("button", { name: /送信しています/u }).waitFor();
   await page.locator("#form-error").waitFor();
   assert.match(await page.locator("#field-name").innerText(), /2〜80文字/u);
   assert.match(await page.locator("#field-email").innerText(), /254文字以内の有効なメールアドレス/u);
   assert.match(await page.locator("#field-slotId").innerText(), /有効なOffice Hoursの時間枠/u);
   assert.match(await page.locator("#field-privacyConsent").innerText(), /入力内容を保存するには同意が必要/u);
-  assert.match(await page.locator("#form-error").innerText(), /入力内容を確認してから、リクエストをもう一度保存/u);
+  assert.match(await page.locator("#form-error").innerText(), /入力内容を確認してから、リクエストをもう一度送信/u);
 
   const initialSlot = page.locator(".slot-button:not(:disabled)").first();
   const initialSlotId = await initialSlot.getAttribute("data-slot-id");
@@ -215,7 +215,7 @@ try {
   }, { times: 1 });
   await submit.click();
   await page.locator("#form-error").waitFor();
-  assert.match(await page.locator("#form-error").innerText(), /予期しない問題により、リクエストを保存できませんでした/u);
+  assert.match(await page.locator("#form-error").innerText(), /予期しない問題により、リクエストを送信できませんでした/u);
 
   const claimed = await context.request.post(`${baseUrl}/api/bookings`, {
     headers: { "idempotency-key": "browser-conflict-owner-001" },
@@ -251,7 +251,7 @@ try {
     name: "Browser Reviewer",
     email: "browser-reviewer@example.test",
     slotId: successfulSlotId,
-    timezone: "UTC",
+    timezone: "Asia/Tokyo",
     privacyConsent: true,
   });
   const successfulPayload = await successfulResponse.json() as {
@@ -263,10 +263,10 @@ try {
   const renderedSuccessState = page.locator("#success-state");
   await renderedSuccessState.waitFor();
   assert.equal(await renderedSuccessState.evaluate((node) => node === document.activeElement), true);
-  assert.match(await renderedSuccessState.innerText(), /リクエストを保存しました/u);
-  assert.match(await renderedSuccessState.innerText(), /この時間枠は、このリクエスト用に確保されています/u);
-  assert.match(await renderedSuccessState.innerText(), /運営者への通知.*自動では行いません/u);
-  assert.match(await renderedSuccessState.innerText(), /返信も保証しません/u);
+  assert.match(await renderedSuccessState.innerText(), /リクエストを受け付けました/u);
+  assert.match(await renderedSuccessState.innerText(), /選択した時間枠を仮確保しました/u);
+  assert.match(await renderedSuccessState.innerText(), /面談確定ではありません/u);
+  assert.match(await renderedSuccessState.innerText(), /Google Calendarへの登録や自動メール通知は行いません/u);
   assert.match(await renderedSuccessState.innerText(), /Request ID/iu);
   assert.match(await page.locator("#booking-reference").innerText(), /^[0-9a-f-]{36}$/u);
   assert.doesNotMatch(await renderedSuccessState.innerText(), /example\.test/u);

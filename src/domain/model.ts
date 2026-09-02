@@ -35,7 +35,7 @@ export interface BookingConfirmation {
   slotId: string;
   startAt: string;
   endAt: string;
-  status: "confirmed";
+  status: "requested";
 }
 
 export type CreateBookingResult =

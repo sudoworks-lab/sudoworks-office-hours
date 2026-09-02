@@ -61,7 +61,7 @@ export class SlotConflictError extends AppError {
   constructor() {
     super({
       code: "SLOT_ALREADY_BOOKED",
-      message: "Someone else booked that slot first. Please choose another.",
+      message: "Another request holds that slot. Please choose another.",
       status: 409,
       retryable: true,
     });

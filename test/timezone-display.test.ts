@@ -27,6 +27,7 @@ test("UTC slot instants are presented in Asia/Tokyo without offset labels or ins
   assert.equal(start.getTime(), originalInstant);
   assert.equal(start.toISOString(), startAt);
   assert.match(javascript, /const displayTimezone = "Asia\/Tokyo";/u);
+  assert.match(javascript, /const submissionTimezone = displayTimezone;/u);
   assert.match(javascript, /timeZone: displayTimezone/u);
   assert.doesNotMatch(javascript, /timeZoneName/u);
   assert.match(html, /<p id="visitor-timezone">日本時間（JST）<\/p>/u);

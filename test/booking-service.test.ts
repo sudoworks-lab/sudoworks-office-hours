@@ -37,7 +37,7 @@ describe("BookingService", () => {
       slotId: validInput.slotId,
       startAt: "2030-01-03T09:00:00.000Z",
       endAt: "2030-01-03T09:30:00.000Z",
-      status: "confirmed",
+      status: "requested",
     });
     assert.equal("email" in result.booking, false);
     assert.equal("name" in result.booking, false);
