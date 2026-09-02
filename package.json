@@ -1,0 +1,39 @@
+{
+  "name": "sudoworks-office-hours",
+  "version": "0.3.0",
+  "private": true,
+  "description": "An evidence-first reliability portfolio with a locally executable Office Hours booking slice and unapplied AWS CDK architecture.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0 <23"
+  },
+  "packageManager": "npm@10.9.7",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "npm run dependency:check && npm run typecheck && npm run lint",
+    "dependency:check": "npm ls --depth=0",
+    "dev": "npm run build && node --watch --experimental-strip-types src/local/server.ts",
+    "start": "node --experimental-strip-types src/local/server.ts",
+    "start:built": "node dist/local/server.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "node --experimental-strip-types scripts/lint.ts",
+    "test": "node --experimental-strip-types --test --test-concurrency=1 test/*.test.ts",
+    "test:browser": "node --experimental-strip-types test/browser/e2e.ts",
+    "infra:test": "npm run build && node --experimental-strip-types --test test/infra/*.test.ts",
+    "infra:synth": "npm run build && node --experimental-strip-types scripts/synth.ts",
+    "verify:core": "npm run check && npm test && npm run build && npm run infra:test && npm run infra:synth",
+    "verify": "npm run verify:core && npm run test:browser"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1121.0",
+    "@aws-sdk/client-secrets-manager": "3.1121.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.12",
+    "aws-cdk-lib": "2.267.0",
+    "constructs": "10.8.1",
+    "esbuild": "0.28.2",
+    "playwright": "1.62.1",
+    "typescript": "7.0.2"
+  }
+}

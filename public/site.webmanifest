@@ -1,0 +1,9 @@
+{
+  "name": "SudoWorks Cloud Infrastructure Engineer Portfolio",
+  "short_name": "SudoWorks",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7f4",
+  "theme_color": "#f5f7f4",
+  "icons": []
+}

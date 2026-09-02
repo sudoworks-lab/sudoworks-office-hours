@@ -1,0 +1,10 @@
+.git
+.github
+data
+dist
+docs
+infra
+reports
+test
+*.local
+
